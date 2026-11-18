@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shop inventory</title>
+  <style>
+    :root {
+      --green: #1faa4c;
+      --green-dark: #178a3d;
+      --ink: #161616;
+      --muted: #6b7280;
+      --line: #e6e7eb;
+      --bg: #f5f6f8;
+      --banner: #f8e7c8;
+      --brown: #6d4b16;
+      --brown-btn: #7a4e12;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Inter, system-ui, sans-serif;
+      background: #fff;
+      color: var(--ink);
+    }
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 22px 28px 48px; }
+    .top {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: var(--green);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      flex: none;
+    }
+    h1 { margin: 0; font-size: 30px; letter-spacing: -0.03em; }
+    .spacer { flex: 1; }
+    button, input, select { font: inherit; }
+    .ghost, .solid, .brown, .chip, .text-btn {
+      border-radius: 999px;
+      cursor: pointer;
+    }
+    .ghost {
+      background: #fff;
+      border: 1px solid #d9dbe1;
+      padding: 10px 18px;
+      color: var(--ink);
+    }
+    .solid {
+      background: var(--green);
+      color: #fff;
+      border: 0;
+      padding: 11px 18px;
+      font-weight: 650;
+    }
+    .solid:hover { background: var(--green-dark); }
+    .search {
+      margin-top: 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #eef0f3;
+      border-radius: 999px;
+      padding: 14px 18px;
+      color: #9aa1ab;
+    }
+    .search input {
+      border: 0;
+      background: transparent;
+      width: 100%;
+      outline: none;
+      color: var(--ink);
+      font-size: 16px;
+    }
+    .banner {
+      margin-top: 16px;
+      background: var(--banner);
+      border-radius: 16px;
+      padding: 16px 16px 16px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .banner strong { color: var(--brown); font-size: 16px; }
+    .brown {
+      background: var(--brown-btn);
+      color: #fff;
+      border: 0;
+      padding: 10px 16px;
+      font-weight: 650;
+      white-space: nowrap;
+    }
+    .stats {
+      display: flex;
+      gap: 54px;
+      margin: 22px 4px 8px;
+    }
+    .stats span { display: block; color: #8b909a; font-size: 14px; margin-bottom: 4px; }
+    .stats strong { font-size: 28px; letter-spacing: -0.03em; }
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 18px;
+      flex-wrap: wrap;
+    }
+    .chip {
+      background: #fff;
+      border: 1px solid #e1e3e8;
+      padding: 8px 14px;
+      color: #3f3f46;
+    }
+    .chip.active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+    .toolbar select {
+      margin-left: auto;
+      border: 1px solid #e1e3e8;
+      background: #fff;
+      border-radius: 999px;
+      padding: 8px 14px;
+      color: #3f3f46;
+    }
+    .empty {
+      margin-top: 16px;
+      min-height: 280px;
+      border: 1.5px dashed #d5d7dd;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      color: #8b909a;
+      text-align: center;
+      padding: 24px;
+    }
+    .list { margin-top: 16px; display: flex; flex-direction: column; gap: 10px; }
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px 18px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px 18px;
+      align-items: center;
+    }
+    .card h2 { margin: 0; font-size: 18px; }
+    .meta { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+    .badge {
+      justify-self: end;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 13px;
+      font-weight: 650;
+    }
+    .badge.ok { background: #e8f7ee; color: #157a3a; }
+    .badge.low { background: #fff4d6; color: #8a5a10; }
+    .badge.out { background: #fde8e6; color: #a33b32; }
+    .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .controls label { color: var(--muted); font-size: 13px; }
+    .controls input {
+      width: 88px;
+      border: 1px solid #e1e3e8;
+      border-radius: 10px;
+      padding: 8px 10px;
+    }
+    .text-btn {
+      border: 0;
+      background: #f3f4f6;
+      padding: 8px 12px;
+    }
+    .text-btn.danger { background: #fde8e6; color: #a33b32; }
+    #message { min-height: 1.2em; margin: 10px 4px 0; color: #157a3a; }
+    #message.error { color: #a33b32; }
+    .modal-back {
+      position: fixed;
+      inset: 0;
+      background: rgba(17, 17, 17, 0.35);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-back.open { display: flex; }
+    .modal {
+      width: min(440px, 100%);
+      background: #fff;
+      border-radius: 18px;
+      padding: 22px;
+    }
+    .modal h2 { margin: 0 0 14px; font-size: 22px; }
+    .modal label { display: block; margin: 10px 0 6px; font-size: 14px; color: #3f3f46; }
+    .modal input {
+      width: 100%;
+      border: 1px solid #e1e3e8;
+      border-radius: 12px;
+      padding: 10px 12px;
+    }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+    .found { color: var(--muted); min-height: 1.2em; }
+    @media (max-width: 720px) {
+      .top { flex-wrap: wrap; }
+      .stats { gap: 28px; }
+      .card { grid-template-columns: 1fr; }
+      .badge { justify-self: start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="logo" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M6 7h12l-1 13H7L6 7z"/>
+          <path d="M9 7a3 3 0 0 1 6 0"/>
+        </svg>
+      </div>
+      <h1>Shop inventory</h1>
+      <div class="spacer"></div>
+      <button class="ghost" id="open-import" type="button">Import barcode</button>
+      <button class="solid" id="open-add" type="button">+ Add item</button>
+    </div>
+
+    <label class="search">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="7"/>
+        <path d="M20 20l-3.5-3.5"/>
+      </svg>
+      <input id="search" type="search" placeholder="Search products or brands">
+    </label>
+
+    <div class="banner">
+      <strong id="banner-text">0 products need restocking. 0 running low.</strong>
+      <button class="brown" id="review" type="button">Review now</button>
+    </div>
+
+    <div class="stats">
+      <div><span>Products</span><strong id="stat-products">0</strong></div>
+      <div><span>Units in stock</span><strong id="stat-units">0</strong></div>
+      <div><span>Stock value</span><strong id="stat-value">$0.00</strong></div>
+    </div>
+    <p id="message"></p>
+
+    <div class="toolbar">
+      <button class="chip" type="button" data-filter="all">All 0</button>
+      <button class="chip active" type="button" data-filter="in">In stock 0</button>
+      <button class="chip" type="button" data-filter="low">Low 0</button>
+      <button class="chip" type="button" data-filter="out">Sold out 0</button>
+      <select id="sort">
+        <option value="newest">Sort: Newest first</option>
+        <option value="oldest">Sort: Oldest first</option>
+        <option value="name">Sort: Name</option>
+        <option value="price">Sort: Price</option>
+        <option value="stock">Sort: Stock</option>
+      </select>
+    </div>
+
+    <div id="empty" class="empty">No products yet. Use "Add item" to stock your first one.</div>
+    <div id="list" class="list" hidden></div>
+  </div>
+
+  <div class="modal-back" id="add-modal">
+    <form class="modal" id="add-form">
+      <h2>Add item</h2>
+      <label>Name</label>
+      <input id="add-name" required>
+      <label>Brand</label>
+      <input id="add-brand">
+      <label>Barcode</label>
+      <input id="add-barcode">
+      <label>Price</label>
+      <input id="add-price" type="number" min="0" step="0.01" required>
+      <label>Quantity</label>
+      <input id="add-qty" type="number" min="0" step="1" required>
+      <div class="modal-actions">
+        <button class="ghost" type="button" data-close="add-modal">Cancel</button>
+        <button class="solid" type="submit">Add item</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="modal-back" id="import-modal">
+    <form class="modal" id="import-form">
+      <h2>Import barcode</h2>
+      <label>Barcode</label>
+      <input id="import-barcode" required>
+      <label>Price</label>
+      <input id="import-price" type="number" min="0" step="0.01" value="3.49" required>
+      <label>Quantity</label>
+      <input id="import-qty" type="number" min="0" step="1" value="12" required>
+      <p class="found" id="found"></p>
+      <div class="modal-actions">
+        <button class="ghost" type="button" id="lookup">Look up</button>
+        <button class="ghost" type="button" data-close="import-modal">Cancel</button>
+        <button class="solid" type="submit">Save into inventory</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    const LOW_AT = 5;
+    let items = [];
+    let filter = "in";
+
+    const listEl = document.getElementById("list");
+    const emptyEl = document.getElementById("empty");
+    const messageEl = document.getElementById("message");
+
+    function money(value) {
+      return "$" + Number(value).toFixed(2);
+    }
+
+    function level(item) {
+      if (item.quantity <= 0) return "out";
+      if (item.quantity <= LOW_AT) return "low";
+      return "in";
+    }
+
+    function say(text, isError) {
+      messageEl.textContent = text || "";
+      messageEl.className = isError ? "error" : "";
+    }
+
+    async function readJson(response) {
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Request failed");
+      return data;
+    }
+
+    function visibleItems() {
+      const query = document.getElementById("search").value.trim().toLowerCase();
+      let rows = items.filter((item) => {
+        const haystack = (item.product_name + " " + (item.brands || "")).toLowerCase();
+        if (query && !haystack.includes(query)) return false;
+        if (filter === "all") return true;
+        return level(item) === filter;
+      });
+      const sort = document.getElementById("sort").value;
+      rows.sort((a, b) => {
+        if (sort === "oldest") return a.id - b.id;
+        if (sort === "name") return a.product_name.localeCompare(b.product_name);
+        if (sort === "price") return a.price - b.price;
+        if (sort === "stock") return a.quantity - b.quantity;
+        return b.id - a.id;
+      });
+      return rows;
+    }
+
+    function render() {
+      const soldOut = items.filter((item) => level(item) === "out").length;
+      const low = items.filter((item) => level(item) === "low").length;
+      const inStock = items.filter((item) => level(item) === "in").length;
+      const units = items.reduce((sum, item) => sum + item.quantity, 0);
+      const value = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+      document.getElementById("banner-text").textContent =
+        `${soldOut} products need restocking. ${low} running low.`;
+      document.getElementById("stat-products").textContent = String(items.length);
+      document.getElementById("stat-units").textContent = String(units);
+      document.getElementById("stat-value").textContent = money(value);
+
+      const counts = { all: items.length, in: inStock, low, out: soldOut };
+      document.querySelectorAll(".chip").forEach((chip) => {
+        const name = chip.dataset.filter;
+        const label = { all: "All", in: "In stock", low: "Low", out: "Sold out" }[name];
+        chip.textContent = `${label} ${counts[name]}`;
+        chip.classList.toggle("active", name === filter);
+      });
+
+      const rows = visibleItems();
+      listEl.innerHTML = "";
+      if (!rows.length) {
+        emptyEl.hidden = false;
+        listEl.hidden = true;
+        emptyEl.textContent = items.length
+          ? "Nothing matches this search or filter."
+          : 'No products yet. Use "Add item" to stock your first one.';
+        return;
+      }
+      emptyEl.hidden = true;
+      listEl.hidden = false;
+      rows.forEach((item) => {
+        const card = document.createElement("article");
+        card.className = "card";
+        const info = document.createElement("div");
+        const title = document.createElement("h2");
+        title.textContent = item.product_name;
+        const meta = document.createElement("p");
+        meta.className = "meta";
+        meta.textContent = [item.brands || "Unknown brand", item.barcode || "no barcode"].join(" · ");
+        info.append(title, meta);
+
+        const badge = document.createElement("span");
+        const state = level(item);
+        badge.className = "badge " + (state === "in" ? "ok" : state);
+        badge.textContent = state === "in" ? "In stock" : state === "low" ? "Low" : "Sold out";
+
+        const controls = document.createElement("div");
+        controls.className = "controls";
+        controls.innerHTML = `
+          <label>Price <input data-field="price" value="${item.price}"></label>
+          <label>Stock <input data-field="quantity" value="${item.quantity}"></label>
+          <button class="text-btn" type="button" data-save="${item.id}">Save</button>
+          <button class="text-btn danger" type="button" data-delete="${item.id}">Delete</button>`;
+        card.append(info, badge, controls);
+        listEl.appendChild(card);
+      });
+    }
+
+    async function load() {
+      const data = await readJson(await fetch("/inventory"));
+      items = data.inventory;
+      render();
+    }
+
+    document.getElementById("search").addEventListener("input", render);
+    document.getElementById("sort").addEventListener("change", render);
+    document.querySelector(".toolbar").addEventListener("click", (event) => {
+      const chip = event.target.closest(".chip");
+      if (!chip) return;
+      filter = chip.dataset.filter;
+      render();
+    });
+    document.getElementById("review").addEventListener("click", () => {
+      const soldOut = items.some((item) => level(item) === "out");
+      filter = soldOut ? "out" : "low";
+      render();
+    });
+
+    function openModal(id) { document.getElementById(id).classList.add("open"); }
+    function closeModal(id) { document.getElementById(id).classList.remove("open"); }
+    document.getElementById("open-add").addEventListener("click", () => openModal("add-modal"));
+    document.getElementById("open-import").addEventListener("click", () => openModal("import-modal"));
+    document.querySelectorAll("[data-close]").forEach((button) => {
+      button.addEventListener("click", () => closeModal(button.dataset.close));
+    });
+
+    document.getElementById("add-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      try {
+        const created = await readJson(await fetch("/inventory", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            product_name: document.getElementById("add-name").value,
+            brands: document.getElementById("add-brand").value,
+            barcode: document.getElementById("add-barcode").value,
+            price: Number(document.getElementById("add-price").value),
+            quantity: Number(document.getElementById("add-qty").value)
+          })
+        }));
+        closeModal("add-modal");
+        event.target.reset();
+        filter = "all";
+        say(`Added ${created.product_name}.`);
+        await load();
+      } catch (error) {
+        say(error.message, true);
+      }
+    });
+
+    document.getElementById("lookup").addEventListener("click", async () => {
+      const barcode = document.getElementById("import-barcode").value.trim();
+      try {
+        const product = await readJson(await fetch("/lookup/barcode/" + encodeURIComponent(barcode)));
+        document.getElementById("found").textContent =
+          `${product.product_name} · ${product.brands || "Unknown brand"}`;
+      } catch (error) {
+        document.getElementById("found").textContent = error.message;
+      }
+    });
+
+    document.getElementById("import-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      try {
+        const created = await readJson(await fetch("/inventory/import", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            barcode: document.getElementById("import-barcode").value.trim(),
+            price: Number(document.getElementById("import-price").value),
+            quantity: Number(document.getElementById("import-qty").value)
+          })
+        }));
+        closeModal("import-modal");
+        document.getElementById("found").textContent = "";
+        filter = "all";
+        say(`Saved ${created.product_name} from OpenFoodFacts.`);
+        await load();
+      } catch (error) {
+        say(error.message, true);
+      }
+    });
+
+    listEl.addEventListener("click", async (event) => {
+      const saveId = event.target.getAttribute("data-save");
+      const deleteId = event.target.getAttribute("data-delete");
+      try {
+        if (saveId) {
+          const card = event.target.closest(".card");
+          const price = card.querySelector('[data-field="price"]').value;
+          const quantity = card.querySelector('[data-field="quantity"]').value;
+          await readJson(await fetch(`/inventory/${saveId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ price: Number(price), quantity: Number(quantity) })
+          }));
+          say(`Updated item ${saveId}.`);
+          await load();
+        }
+        if (deleteId) {
+          await readJson(await fetch(`/inventory/${deleteId}`, { method: "DELETE" }));
+          say(`Deleted item ${deleteId}.`);
+          await load();
+        }
+      } catch (error) {
+        say(error.message, true);
+      }
+    });
+
+    load().catch((error) => say(error.message, true));
+  </script>
+</body>
+</html>

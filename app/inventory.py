@@ -1,6 +1,6 @@
 """CRUD routes for inventory items stored in the local array."""
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, render_template, request
 
 from app.storage import InventoryError, add_item, delete_item, get_all, get_by_id, update_item
 
@@ -12,6 +12,12 @@ def _json_object():
     if not isinstance(data, dict):
         return None
     return data
+
+
+@inventory_bp.get("/")
+def home():
+    # Browser screen for the same routes the CLI calls.
+    return render_template("index.html")
 
 
 @inventory_bp.get("/inventory")
